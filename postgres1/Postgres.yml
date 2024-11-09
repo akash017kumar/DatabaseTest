@@ -16,36 +16,46 @@ spec:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: database-pvc
+
       containers:
-      - name: postgres
-        image: postgres:latest
-        ports:
-        - containerPort: 5432
-      VolumeMounts:
-      - name: postgres-storage
-        mountPath: /var/lib/postgresql/data
-        subPath: postgres
+        - name: postgres
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
 
-      env:
-      - name: POSTGRES_USER
-        value: welcome
-      - name: POSTGRES_DB
-        value: Welcome_db
-      - name: POSTGRES_PASSWORD
-        valueFrom:
-          secretkeyRef:
-            name: 
+          env:
+            - name: POSTGRES_USER
+              value: mydatabase
+            - name: POSTGRES_DB
+              value: Welcome_db
+            - name: POSTGRES_PASSWORD
+              valueFrom:          
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
 
+        
 
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres-service
 spec:
   selector:
-    component :postgres
-  type:ClusterIP
-
+    component: postgres
+  type: ClusterIP
   ports:
     - port: 5432
       targetPort: 5432 
